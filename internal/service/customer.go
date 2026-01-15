@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"go-fiber-postgre/domain"
 	"go-fiber-postgre/dto"
 	"time"
@@ -36,15 +37,32 @@ func (c *customerService) Index(ctx context.Context) ([]dto.CustomerData, error)
 // Create implements [domain.CustomerService].
 func (c *customerService) Create(ctx context.Context, req dto.CreateCustomerRequest) error {
 	customer := domain.Customer{
-		ID: uuid.NewString(),
-		Code: req.Code,
-		Name: req.Name,
+		ID:        uuid.NewString(),
+		Code:      req.Code,
+		Name:      req.Name,
 		CreatedAt: sql.NullTime{Valid: true, Time: time.Now()},
 	}
 
 	return c.customerRepository.Save(ctx, &customer)
 }
 
+// Update implements [domain.CustomerService].
+func (c *customerService) Update(ctx context.Context, req dto.UpdateCustomerRequest) error {
+	persisted, err := c.customerRepository.FindById(ctx, req.ID)
+	if err != nil {
+		return err
+	}
+
+	if persisted.ID == "" {
+		return errors.New("data customer tidak ditemukan")
+	}
+
+	persisted.Code = req.Code
+	persisted.Name = req.Name
+	persisted.UpdatedAt = sql.NullTime{Valid: true, Time: time.Now()}
+
+	return c.customerRepository.Update(ctx, &persisted)
+}
 
 func NewCustomer(customerRepository domain.CustomerRepository) domain.CustomerService {
 	return &customerService{

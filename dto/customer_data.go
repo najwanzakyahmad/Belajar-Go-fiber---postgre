@@ -12,5 +12,7 @@ type CreateCustomerRequest struct {
 }
 
 type UpdateCustomerRequest struct {
-	
+	ID   string `json:"-"`
+	Code string `json:"code" validate:"required"`
+	Name string `json:"name" validate:"required"`
 }
