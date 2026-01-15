@@ -34,6 +34,26 @@ func (c *customerService) Index(ctx context.Context) ([]dto.CustomerData, error)
 	return customerData, nil
 }
 
+// Show implements [domain.CustomerService].
+func (c *customerService) Show(ctx context.Context, id string) (dto.CustomerData, error) {
+	persisted, err := c.customerRepository.FindById(ctx, id)
+
+	if err != nil {
+		return dto.CustomerData{}, err
+	}
+
+	if persisted.ID == "" {
+		return dto.CustomerData{}, errors.New("data customer tidak ditemukan")
+	}
+
+	result := dto.CustomerData{
+		ID:   persisted.ID,
+		Code: persisted.Code,
+		Name: persisted.Name,
+	}
+	return result, nil
+}
+
 // Create implements [domain.CustomerService].
 func (c *customerService) Create(ctx context.Context, req dto.CreateCustomerRequest) error {
 	customer := domain.Customer{

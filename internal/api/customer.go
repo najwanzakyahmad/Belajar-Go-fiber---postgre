@@ -22,6 +22,7 @@ func NewCustomer(app *fiber.App, customerService domain.CustomerService) {
 	}
 
 	app.Get("/customers", ca.Index)
+	app.Get("/customer/:id", ca.Show)
 	app.Post("/customers", ca.Create)
 	app.Put("/customer/:id", ca.Update)
 	app.Delete("/customer/:id", ca.Delete)
@@ -38,6 +39,20 @@ func (ca customerApi) Index(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(dto.CreateResponseSuccess(res))
+}
+
+func (ca customerApi) Show(ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	defer cancel()
+
+	id := ctx.Params("id")
+	result, err := ca.customerService.Show(c, id)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).
+			JSON(dto.CreateResponseError(err.Error()))
+	}
+
+	return ctx.JSON(dto.CreateResponseSuccess(result))
 }
  
 func (ca customerApi) Create(ctx *fiber.Ctx) error {
