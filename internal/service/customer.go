@@ -64,6 +64,20 @@ func (c *customerService) Update(ctx context.Context, req dto.UpdateCustomerRequ
 	return c.customerRepository.Update(ctx, &persisted)
 }
 
+// Delete implements [domain.CustomerService].
+func (c *customerService) Delete(ctx context.Context, id string) error {
+	persisted, err := c.customerRepository.FindById(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if persisted.ID == "" {
+		return errors.New("data customer tidak ditemukan")
+	}
+
+	return c.customerRepository.Delete(ctx, id)
+}
+
 func NewCustomer(customerRepository domain.CustomerRepository) domain.CustomerService {
 	return &customerService{
 		customerRepository: customerRepository,
